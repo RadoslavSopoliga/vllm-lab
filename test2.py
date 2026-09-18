@@ -21,6 +21,8 @@ server = requests.post(
     json={"model": MODEL, "messages": messages, "add_generation_prompt": True},
 ).json()["count"]
 
+
+
 print(f"naive     = {naive}")
 print(f"template  = {templated}")
 print(f"server    = {server}")
@@ -28,3 +30,15 @@ print(f"usage     = {resp.usage.prompt_tokens}")
 print()
 print("--- čo model naozaj dostal na vstupe ---")
 print(repr(prompt_str))
+
+
+for thinking in (True, False):
+    r = client.chat.completions.create(
+        model=MODEL, messages=messages, max_tokens=2000,
+        extra_body={"chat_template_kwargs": {"enable_thinking": thinking}},
+    )
+    d = r.usage.completion_tokens_details
+    print(f"thinking={thinking}: in={r.usage.prompt_tokens} "
+          f"out={r.usage.completion_tokens} "
+          f"reasoning={d.reasoning_tokens if d else None} "
+          f"finish={r.choices[0].finish_reason}")
